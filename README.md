@@ -76,6 +76,7 @@ The testbench performs the following sequence of operations:
 ## 📊 Simulation Waveform
 🔎 Waveform shows write and read operations, pointer increment, and full/empty flag transitions.
 
+![8x8 Synchronous FIFO](https://github.com/user-attachments/assets/beac3b5c-8bca-4497-874a-4bf6ecafaad7)
 
 ## 🌐 Run It Online (EDA Playground)
 Simulate the FIFO live in your browser using the following link:
@@ -85,3 +86,9 @@ Simulate the FIFO live in your browser using the following link:
 - Language: Verilog HDL (IEEE 1364-2001)
 - Simulator: Synopsys VCS / Aldec Riviera (via EDA Playground)
 - Platform: Web-based (No installation required)
+
+## Contact
+
+- [Linkedin](https://www.linkedin.com/in/dattpanchal04/)
+- [GitHub](https://github.com/DuttPanchal04)
+- Email: dattpanchal2904@gmail.com
