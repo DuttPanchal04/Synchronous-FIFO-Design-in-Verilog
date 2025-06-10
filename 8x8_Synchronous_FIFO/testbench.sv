@@ -36,32 +36,53 @@ module sync_8x8_fifo_tb;
 
     $dumpfile("test_fifo.vcd");
     $dumpvars(0, sync_8x8_fifo_tb);
-    
+
     // monitoring everything
     $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
 
 
     rst = 0; we = 0; re = 0; w_data = 0;
+
     #12 rst = 1;
 
+
+    // check initial location of write pointer and read pointer ( you can use monitor too )
+    // $display("At %t, your WP at %b and RP at %b", $time, dut.wp, dut.rp);
+
+
+
+    // to check defualt memory address values of fifo
+    /*
+    for(i=0; i < DEPTH; i = i + 1) begin
+      $display("Data @%0b is %0b", i, dut.fifo[i]);
+    end
+    */
+
+
+
     // first we make we = 1 and write the random 8 bit data to each slot of the fifo
-    repeat (8) begin
+    repeat (7) begin
       @(posedge clk);
       we = 1;
       w_data = $random;
     end
 
+    // to check overrun flag high
+    /*
+    @(posedge clk);
+    @(posedge clk);
+    */
 
     @(posedge clk) we = 0;    
-    
-    
+
+
     // loop for viewing each slot data in FIFO after write and before read
     for(i=0; i < DEPTH; i = i + 1) begin
       $display("Data @%0b is %0b", i, dut.fifo[i]);
     end
-    
+
     //@(posedge clk) rst = 0; // test reset inbetween
-    
+
     // now data has been written into fifo. Make re = 1, and read data.
     repeat (8) begin
       @(posedge clk);
@@ -69,8 +90,8 @@ module sync_8x8_fifo_tb;
     end
 
     @(posedge clk) re = 0;
-    
-    
+
+
     // when both we and re are high.
     /*
     repeat (5) begin
@@ -79,11 +100,11 @@ module sync_8x8_fifo_tb;
       w_data = $random;
       re = 1;
     end
-    
+
     @(posedge clk); we = 0; re = 0;
 	*/
-    
-    
+
+
     #20;
 
     // loop for viewing each slot data in FIFO after read (all data will be consumed)
