@@ -17,7 +17,7 @@ module sync_8x8_fifo #(
 
   // additional counter
   reg [$clog2(DEPTH+1)-1:0] count;
-  
+
   // varibales for overrun and underrun
   reg overrun, underrun;
 
@@ -54,14 +54,27 @@ module sync_8x8_fifo #(
       end
 
       // assigning value to some output status signals based on some condition
+
+      // when count reach == depth, then make full flag high.
       full <= (count == DEPTH-1);
+
+      // when count reach == 0, then make empty flag high.
       empty <= (count == 0);
-      almost_full <= (count >= 3'b110);
+
+      // if count >= 6 in this case, almost_full will high.
+      almost_full <= (count >= DEPTH-2);
+
+      // when count <= 2 here, almost_empty will high.
       almost_empty <= (count <= 3'b010);
-      
+
       // checking overrun and overrun
-      overrun <= (count > DEPTH);
-      underrun <= (empty == 1'b1);
+
+      // when both we and full flag is high, then its overrun. (just inform by flag, not taking any action)
+      overrun <= (we & full);
+
+      // when both re and empty flag is high, then its underrun. (just inform by flag, not taking any action)
+      underrun <= (re & empty);
+
 
     end
   end
