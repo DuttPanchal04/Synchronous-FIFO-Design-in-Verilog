@@ -13,6 +13,8 @@ module sync_8x8_fifo #(
 
   // 3 bit write/read pointers
   reg [$clog2(DEPTH)-1:0] wp, rp;
+  
+  // memory array 
   reg [DATA_WIDTH-1:0] fifo [0:DEPTH-1];
 
   // additional counter
@@ -38,13 +40,14 @@ module sync_8x8_fifo #(
     // if reset is high, then start main operation.
     else begin
 
+
       // if write enable (we) is high AND full is low, then write data into fifo and then increment the write pointer by 1.
-      if (we && !full) begin
+     if (we && !full) begin
         fifo[wp] <= w_data;
         wp <= wp + 1;
         count <= count + 1;
       end
-
+     
       // if read enable is high AND empty is low then only read data from fifo and increament read pointers
       if (re && !empty) begin
         r_data <= fifo[rp];
@@ -56,7 +59,7 @@ module sync_8x8_fifo #(
       // assigning value to some output status signals based on some condition
 
       // when count reach == depth, then make full flag high.
-      full <= (count == DEPTH-1);
+      full <= (count == DEPTH);
 
       // when count reach == 0, then make empty flag high.
       empty <= (count == 0);
@@ -70,10 +73,10 @@ module sync_8x8_fifo #(
       // checking overrun and overrun
 
       // when both we and full flag is high, then its overrun. (just inform by flag, not taking any action)
-      overrun <= (we & full);
+      overrun <= (we && full);
 
       // when both re and empty flag is high, then its underrun. (just inform by flag, not taking any action)
-      underrun <= (re & empty);
+      underrun <= (re && empty);
 
 
     end
