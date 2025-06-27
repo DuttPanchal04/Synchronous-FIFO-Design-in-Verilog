@@ -12,6 +12,7 @@ module sync_8x8_fifo_tb;
 
   integer i;
 
+  // sanity/connectivity done.
   sync_8x8_fifo dut (
     .clk(clk),
     .rst(rst),
@@ -38,7 +39,7 @@ module sync_8x8_fifo_tb;
     $dumpvars(0, sync_8x8_fifo_tb);
 
     // monitoring everything
-    $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+    //$monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
 
 
     rst = 0; we = 0; re = 0; w_data = 0;
@@ -47,69 +48,139 @@ module sync_8x8_fifo_tb;
 
 
     // check initial location of write pointer and read pointer ( you can use monitor too )
-    // $display("At %t, your WP at %b and RP at %b", $time, dut.wp, dut.rp);
-
-
-
-    // to check defualt memory address values of fifo
-    /*
-    for(i=0; i < DEPTH; i = i + 1) begin
-      $display("Data @%0b is %0b", i, dut.fifo[i]);
+    if($test$plusargs("INITIAL_WP_RP")) begin
+      $display("At %t, your WP at %b and RP at %b", $time, dut.wp, dut.rp);
     end
-    */
 
 
+    // to check defualt values of fifo
+    if($test$plusargs("DEF_FIFO")) begin
+      for(i=0; i < DEPTH; i = i + 1) begin
+        $display("Data @%0b is %0b", i, dut.fifo[i]);
+      end
+    end
+
+
+    // to check ORDER of FIFO
+    if($test$plusargs("ORDER_FIFO")) begin
+
+      $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+
+      repeat (3) begin
+        @(posedge clk);
+        we = 1;
+        w_data = $random;
+      end
+      @(posedge clk) we = 0;
+
+      repeat (3) begin
+        @(posedge clk);
+        re = 1;
+      end
+
+      @(posedge clk) re = 0;
+
+      @(posedge clk) rst = 0;
+
+      @(posedge clk) rst = 1;
+
+    end
 
     // first we make we = 1 and write the random 8 bit data to each slot of the fifo
-    repeat (7) begin
-      @(posedge clk);
-      we = 1;
-      w_data = $random;
+    if ($test$plusargs("WRITE_RAND_FIFO")) begin
+
+      $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+
+      repeat (8) begin
+        @(posedge clk);
+        we = 1;
+        w_data = $random;
+      end
+      @(posedge clk) we = 0;  
     end
 
-    // to check overrun flag high
-    /*
-    @(posedge clk);
-    @(posedge clk);
-    */
 
-    @(posedge clk) we = 0;    
+    if($test$plusargs("CHECK_OVERRUN")) begin
+      @(posedge clk);
+      @(posedge clk);
+    end
 
 
     // loop for viewing each slot data in FIFO after write and before read
-    for(i=0; i < DEPTH; i = i + 1) begin
-      $display("Data @%0b is %0b", i, dut.fifo[i]);
+    if($test$plusargs("CHECK_FIFO_AFTER_WRITE")) begin
+      for(i=0; i < DEPTH; i = i + 1) begin
+        $display("Data @%0b is %0b", i, dut.fifo[i]);
+      end
     end
 
-    //@(posedge clk) rst = 0; // test reset inbetween
+    // for reset check
+    if($test$plusargs("RESET_FIFO")) begin
+
+      $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+
+      rst = 0; 
+      @(posedge clk);
+      @(posedge clk);
+    end
 
     // now data has been written into fifo. Make re = 1, and read data.
-    repeat (8) begin
-      @(posedge clk);
-      re = 1;
+    if($test$plusargs("READ_FIFO")) begin
+
+      $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+
+      repeat (8) begin
+        @(posedge clk);
+        re = 1;
+      end
+
+      @(posedge clk) re = 0;
     end
-
-    @(posedge clk) re = 0;
-
 
     // when both we and re are high.
-    /*
-    repeat (5) begin
-      @(posedge clk)
-      we = 1;
-      w_data = $random;
-      re = 1;
+    if($test$plusargs("WE_RE_BOTH_HIGH")) begin
+
+      $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+      repeat (5) begin
+        @(posedge clk)
+        we = 1;
+        w_data = $random;
+        re = 1;
+      end
+
+      @(posedge clk); we = 0; re = 0;
     end
 
-    @(posedge clk); we = 0; re = 0;
-	*/
 
+
+    // trying writing into fifo when it is full.
+    if($test$plusargs("WRITE_AT_FULL")) begin
+
+      $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+      repeat (8) begin 
+        @(posedge clk); 
+        we = 1; w_data = $random; 
+      end
+      @(posedge clk) we = 1;
+    end
+
+
+    // trying to read data when fifo is empty
+    if($test$plusargs("READ_AT_EMPTY")) begin
+
+      $monitor("rst = %b | we = %b | re = %b | wp = %0b | rp = %0b | w_data = %b | r_data = %b | full = %b | empty = %b | almost_full = %b | almost_empty = %b | overrun = %b | underrun = %b |", rst, we, re, dut.wp, dut.rp, w_data, r_data, full, empty, almost_full, almost_empty, dut.overrun, dut.underrun);
+      repeat (8) begin 
+        @(posedge clk); re = 1; 
+      end
+      @(posedge clk) re = 1; 
+    end
 
     #20;
 
     // loop for viewing each slot data in FIFO after read (all data will be consumed)
-    for(i=0; i < DEPTH; i = i + 1) begin
-      $display("Data @%0b is %0b", i, dut.fifo[i]);
+    if ($test$plusargs("FINAL_FIFO")) begin
+      for(i=0; i < DEPTH; i = i + 1) begin
+        $display("Data @%0b is %0b", i, dut.fifo[i]);
+      end
     end
 
     #10;
